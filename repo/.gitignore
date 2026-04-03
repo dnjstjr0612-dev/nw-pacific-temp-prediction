@@ -1,0 +1,17 @@
+__pycache__/
+*.pyc
+.ipynb_checkpoints/
+.vscode/
+
+*.nc
+*.zarr
+*.npy
+*.npz
+
+data/*
+!data/sample/
+!data/README.md
+
+outputs/models/
+logs/
+tmp/

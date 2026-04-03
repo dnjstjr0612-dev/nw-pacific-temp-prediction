@@ -1,0 +1,9 @@
+{
+    "python-envs.defaultEnvManager": "ms-python.python:conda",
+    "python-envs.defaultPackageManager": "ms-python.python:conda",
+    "python.defaultInterpreterPath": "C:/Users/dnjst/miniconda3/envs/geo_env/python.exe",
+    "code-runner.executorMap": {
+        "python": "C:/Users/dnjst/miniconda3/envs/geo_env/python.exe"
+    },
+    "code-runner.runInTerminal": true
+}
