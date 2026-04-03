@@ -1,21 +1,14 @@
-"""
-CESM-HR SST 다운로드
-- OSDF Director가 Range 요청을 지원하지 않아 curl -C - resume 불가
-- requests 스트리밍 + 파일별 재시도 루프로 대응
-- 완전히 받은 파일(Content-Length 일치)은 skip
-"""
-
 import sys
 import time
 from pathlib import Path
 import requests
+from netCDF4 import Dataset
 
-SAVE_DIR = Path.home() / "Documents/GitHub/Oceanography/nw-pacific-temp-prediction/repo/data/raw/cesm_hr/sst"
+SAVE_DIR = Path("/data3/CESM_HR/SST")
 SAVE_DIR.mkdir(parents=True, exist_ok=True)
 
 BASE = "https://osdf-director.osg-htc.org/ncar/gdex/d651029/B.E.13.B1850C5.ne120_t12.sehires38.003.sunway_02/ocn/proc/tseries/month_1"
 
-# File 개수 서버 받으면 늘려보기.
 FILES = [
     "B.E.13.B1850C5.ne120_t12.sehires38.003.sunway_02.pop.h.SST.025001-025912.nc",
     "B.E.13.B1850C5.ne120_t12.sehires38.003.sunway_02.pop.h.SST.026001-026912.nc",
@@ -28,79 +21,100 @@ FILES = [
     "B.E.13.B1850C5.ne120_t12.sehires38.003.sunway_02.pop.h.SST.033001-033712.nc",
     "B.E.13.B1850C5.ne120_t12.sehires38.003.sunway_02.pop.h.SST.033801-033912.nc",
     "B.E.13.B1850C5.ne120_t12.sehires38.003.sunway_02.pop.h.SST.034001-034912.nc",
+    "B.E.13.B1850C5.ne120_t12.sehires38.003.sunway_02.pop.h.SST.035001-035912.nc",
+    "B.E.13.B1850C5.ne120_t12.sehires38.003.sunway_02.pop.h.SST.036001-036912.nc",
+    "B.E.13.B1850C5.ne120_t12.sehires38.003.sunway_02.pop.h.SST.037001-037912.nc",
+    "B.E.13.B1850C5.ne120_t12.sehires38.003.sunway_02.pop.h.SST.038001-038912.nc",
+    "B.E.13.B1850C5.ne120_t12.sehires38.003.sunway_02.pop.h.SST.039001-039912.nc",
+    "B.E.13.B1850C5.ne120_t12.sehires38.003.sunway_02.pop.h.SST.040001-040912.nc",
+    "B.E.13.B1850C5.ne120_t12.sehires38.003.sunway_02.pop.h.SST.041001-041912.nc",
+    "B.E.13.B1850C5.ne120_t12.sehires38.003.sunway_02.pop.h.SST.042001-042912.nc",
+    "B.E.13.B1850C5.ne120_t12.sehires38.003.sunway_02.pop.h.SST.043001-043912.nc",
+    "B.E.13.B1850C5.ne120_t12.sehires38.003.sunway_02.pop.h.SST.044001-044912.nc",
+    "B.E.13.B1850C5.ne120_t12.sehires38.003.sunway_02.pop.h.SST.045001-045912.nc",
+    "B.E.13.B1850C5.ne120_t12.sehires38.003.sunway_02.pop.h.SST.046001-046912.nc",
+    "B.E.13.B1850C5.ne120_t12.sehires38.003.sunway_02.pop.h.SST.047001-047912.nc",
+    "B.E.13.B1850C5.ne120_t12.sehires38.003.sunway_02.pop.h.SST.048001-048912.nc",
+    "B.E.13.B1850C5.ne120_t12.sehires38.003.sunway_02.pop.h.SST.049001-049912.nc",
+    "B.E.13.B1850C5.ne120_t12.sehires38.003.sunway_02.pop.h.SST.050001-050912.nc",
+    "B.E.13.B1850C5.ne120_t12.sehires38.003.sunway_02.pop.h.SST.050201-051912.nc",
+    "B.E.13.B1850C5.ne120_t12.sehires38.003.sunway_02.pop.h.SST.051001-051912.nc",
 ]
 
-CHUNK   = 4 * 1024 * 1024   # 4 MB 청크
-RETRIES = 20                  # 파일당 최대 재시도 횟수
-WAIT    = 30                  # 재시도 전 대기 (초)
+CHUNK = 4 * 1024 * 1024
+RETRIES = 10
+WAIT = 20
 
+def validate_nc(path: Path) -> bool:
+    try:
+        ds = Dataset(str(path))
+        ds.close()
+        return True
+    except Exception as e:
+        print(f"  validation FAIL: {e}")
+        return False
 
 def download_file(fname: str) -> bool:
-    url  = f"{BASE}/{fname}"
+    url = f"{BASE}/{fname}"
     dest = SAVE_DIR / fname
-    tmp  = dest.with_suffix(".tmp")
+    tmp = SAVE_DIR / f"{fname}.tmp"
 
     for attempt in range(1, RETRIES + 1):
         try:
-            # 이전 시도에서 받아둔 바이트 수 확인 → Range 요청 시도
-            offset = tmp.stat().st_size if tmp.exists() else 0
-            headers = {"Range": f"bytes={offset}-"} if offset > 0 else {}
+            if tmp.exists():
+                tmp.unlink()
 
-            with requests.get(url, headers=headers, stream=True, timeout=60) as r:
+            with requests.get(url, stream=True, timeout=120) as r:
                 r.raise_for_status()
                 total = int(r.headers.get("Content-Length", 0))
+                received = 0
 
-                # 이미 완료된 파일 skip
-                if dest.exists() and total and dest.stat().st_size == total:
-                    print(f"  skip ({dest.stat().st_size / 1e9:.2f} GB — 완료)")
-                    return True
-
-                # 206 Partial Content → 이어받기 / 200 OK → 처음부터
-                if r.status_code == 206:
-                    received = offset
-                    mode = "ab"
-                    real_total = offset + total   # Content-Length는 남은 바이트
-                    print(f"  resume from {offset/1e6:.0f} MB")
-                else:
-                    received = 0
-                    mode = "wb"
-                    real_total = total
-                    if offset > 0:
-                        print(f"  서버가 resume 미지원 → 처음부터 재시도")
-
-                with open(tmp, mode) as f:
+                with open(tmp, "wb") as f:
                     for chunk in r.iter_content(chunk_size=CHUNK):
-                        f.write(chunk)
-                        received += len(chunk)
-                        pct = received / real_total * 100 if real_total else 0
-                        print(f"\r  {pct:5.1f}%  {received/1e6:8.0f} MB / {real_total/1e9:.2f} GB", end="", flush=True)
+                        if chunk:
+                            f.write(chunk)
+                            received += len(chunk)
+                            if total:
+                                pct = 100 * received / total
+                                print(f"\r  {pct:5.1f}%  {received/1e9:.2f}/{total/1e9:.2f} GB", end="", flush=True)
 
             print()
-            if real_total and tmp.stat().st_size != real_total:
-                raise ValueError(f"크기 불일치: {tmp.stat().st_size} != {real_total}")
+
+            if total and tmp.stat().st_size != total:
+                raise ValueError(f"size mismatch: {tmp.stat().st_size} != {total}")
 
             tmp.rename(dest)
-            print(f"  완료 ({dest.stat().st_size / 1e9:.2f} GB)")
+
+            if not validate_nc(dest):
+                raise ValueError("netCDF validation failed")
+
+            print(f"  OK: {fname}")
             return True
 
         except Exception as e:
-            print(f"\n  시도 {attempt}/{RETRIES} 실패: {e}")
+            print(f"  attempt {attempt}/{RETRIES} failed: {e}")
+            if tmp.exists():
+                tmp.unlink()
+            if dest.exists():
+                dest.unlink()
             if attempt < RETRIES:
-                print(f"  {WAIT}초 후 재시도...")
+                print(f"  waiting {WAIT}s before retry...")
                 time.sleep(WAIT)
 
     return False
 
-
 failed = []
 for i, fname in enumerate(FILES, 1):
     print(f"\n[{i}/{len(FILES)}] {fname}")
-    if not download_file(fname):
+    ok = download_file(fname)
+    if not ok:
         failed.append(fname)
 
 print("\n" + "=" * 60)
 if failed:
-    print(f"실패 {len(failed)}개:")
-    for f in failed: print(f"  {f}")
+    print(f"FAILED {len(failed)} files:")
+    for f in failed:
+        print(" ", f)
     sys.exit(1)
-print(f"전체 {len(FILES)}개 완료.")
+else:
+    print("ALL FILES DOWNLOADED AND VALIDATED")
