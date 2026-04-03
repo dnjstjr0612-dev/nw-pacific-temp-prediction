@@ -12,6 +12,6 @@ if HOST.startswith("acc") or "yonsei" in HOST:
     RESULTS = Path("/data3/leewonseok/results")
 else:
     RAW_OISST = Path("data/sample/OISST_V21")
-    RAW_CESM = Path("data/sample/CESM_HR/SST")
+    RAW_CESM = Path("data/sample/CESM_HR")
     PROCESSED = Path("outputs")
     RESULTS = Path("outputs")
