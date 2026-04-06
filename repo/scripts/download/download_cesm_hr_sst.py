@@ -96,6 +96,10 @@ def download_file(fname: str) -> bool:
             if tmp.exists():
                 tmp.unlink()
             if dest.exists():
+                if validate_nc(dest):
+                    return True
+                else:
+                    dest.unlink()
                 dest.unlink()
             if attempt < RETRIES:
                 print(f"  waiting {WAIT}s before retry...")
