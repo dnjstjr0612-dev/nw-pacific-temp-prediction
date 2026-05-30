@@ -8,7 +8,7 @@ This manuscript is framed as a *Journal of Climate*-style process-and-predictabi
 
 ## Abstract
 
-Seasonal prediction of coastal sea surface temperature anomalies (SSTA) along the northeast Pacific and Alaska coast remains challenging beyond persistence timescales. We evaluate an analog-based forecasting framework that uses OISST observations and a high-resolution CESM-HR analog library to test whether the North Pacific Meridional Mode (NPMM) and the extratropical Pacific Decadal Oscillation component (PDOe) improve seasonal coastal SSTA prediction relative to a broad-domain SST-pattern baseline. Forecast-period results are evaluated only from lead 1 onward because lead 0 represents the prior-month state, not a forecast month. The baseline `wide_local_only` analog forecast is skillful, with domain-wide ACC decreasing from 0.865 at lead 1 to 0.334 at lead 12 and exceeding persistence after lead 3. Domain-wide NPMM source gain is negative at leads 1–4 but becomes positive from lead 5 onward, whereas the coastal-band response peaks earlier and more sharply.
+Seasonal prediction of coastal sea surface temperature anomalies (SSTA) along the northeast Pacific and Alaska coast remains challenging beyond persistence timescales. We evaluate an analog-based forecasting framework that uses OISST observations and a high-resolution CESM-HR analog library to test whether the North Pacific Meridional Mode (NPMM) and the extratropical Pacific Decadal Oscillation component (PDOe) improve seasonal coastal SSTA prediction relative to a broad-domain SST-pattern baseline. Forecast-period results are evaluated only from lead 1 onward because lead 0 represents the prior-month state, not a forecast month. The baseline `wide_local_only` analog forecast is skillful, with domain-wide ACC decreasing from 0.688 at lead 1 to 0.267 at lead 12 and exceeding persistence from lead 3 onward. Domain-wide NPMM source gain is negative or near-zero at leads 1–2 but becomes positive from lead 3 onward, whereas the coastal-band response peaks earlier and more sharply.
 
 The primary forecast-skill improvement is coastal. In the ≤150 km coastal band, NPMM-conditioned analogs reach their maximum improvement at lead 6–7, with `source_gain_acc = +0.0542`, RMSE skill `= +0.0281`, and `both_fraction = 0.923`. Adding PDOe increases the lead 6–7 improvement to `source_gain_acc = +0.0588`, RMSE skill `= +0.0317`, and `both_fraction = 0.961`. Skill decreases offshore, indicating that the NPMM-related predictable signal is concentrated near the coastal boundary. PDOe alone is generally unsuitable as a sole analog predictor: at lead 4–5 in the ≤150 km coastal band, `wide_pdoe` gives `source_gain_acc = −0.0062` and `both_fraction = 0.411`, and its spatial coverage falls below 0.5 at ≥300 km.
 
@@ -161,33 +161,33 @@ Residual composites are evaluated using the lead 4–7 mean SSTA in the 150 km c
 
 ### 3.1 Baseline analog skill and domain-wide sanity check
 
-The baseline `wide_local_only` analog forecast provides a skillful reference forecast before any source-index information is added. In the domain-wide sanity check over 30°–62°N, 195°–240°E, the baseline anomaly correlation coefficient decreases from 0.865 at lead 1 to 0.334 at lead 12. The baseline analog forecast exceeds persistence after lead 3, indicating that the analog framework itself contains useful seasonal predictive information. Lead 0 is not included in this forecast-skill assessment because it represents the prior-month state rather than a forecast month.
+The baseline `wide_local_only` analog forecast provides a skillful reference forecast before any source-index information is added. In the domain-wide sanity check over 30°–62°N, 195°–240°E, the baseline anomaly correlation coefficient decreases from 0.688 at lead 1 to 0.267 at lead 12. The baseline analog forecast exceeds persistence from lead 3 onward, indicating that the analog framework itself contains useful seasonal predictive information. Lead 0 is not included in this forecast-skill assessment because it represents the prior-month state rather than a forecast month.
 
-| Lead | Baseline ACC |
-| ---: | -----------: |
-|    1 |        0.865 |
-|    3 |        0.686 |
-|    5 |        0.570 |
-|    7 |        0.502 |
-|    9 |        0.422 |
-|   12 |        0.334 |
+| Lead | Baseline ACC | 95% CI         |
+| ---: | -----------: | :------------- |
+|    1 |        0.688 | [0.625, 0.742] |
+|    3 |        0.470 | [0.379, 0.553] |
+|    5 |        0.374 | [0.275, 0.466] |
+|    7 |        0.328 | [0.225, 0.424] |
+|    9 |        0.290 | [0.185, 0.388] |
+|   12 |        0.267 | [0.160, 0.367] |
 
-Adding NPMM information does not improve the domain-wide mean at short leads. In the full-domain average, `wide_npmm` source_gain_acc is negative at leads 1–4 and becomes positive from lead 5 onward. The domain-wide maximum occurs at lead 9, with `source_gain_acc = +0.053`. This domain-wide timing is later than the coastal-band maximum, where the NPMM-related gain peaks at lead 6–7. The difference indicates that the predictable NPMM signal is sharper near the coastal boundary than in the full-domain mean.
+Adding NPMM information does not improve the domain-wide mean at the shortest leads. In the full-domain average, `wide_npmm` source_gain_acc is negative at lead 1, near-zero at lead 2, and positive from lead 3 onward. The domain-wide maximum occurs at lead 8, with `source_gain_acc = +0.0471`. This domain-wide timing is later than the coastal-band maximum, where the NPMM-related gain peaks at lead 6–7. The difference indicates that the predictable NPMM signal is sharper near the coastal boundary than in the full-domain mean.
 
 | Lead | `wide_npmm` source_gain_acc | `wide_npmm_pdoe` source_gain_acc | `wide_pdoe` source_gain_acc |
 | ---: | --------------------------: | -------------------------------: | --------------------------: |
-|    1 |                      −0.011 |                           −0.001 |                      −0.004 |
-|    2 |                      −0.018 |                           −0.002 |                      +0.001 |
-|    3 |                      −0.015 |                           −0.004 |                      −0.011 |
-|    4 |                      −0.020 |                           −0.003 |                      −0.006 |
-|    5 |                      +0.011 |                           +0.025 |                      +0.009 |
-|    6 |                      +0.004 |                           +0.014 |                      +0.001 |
-|    7 |                      +0.020 |                           +0.030 |                      −0.013 |
-|    8 |                      +0.034 |                           +0.023 |                      −0.027 |
-|    9 |                      +0.053 |                           +0.045 |                      −0.001 |
-|   10 |                      +0.031 |                           +0.033 |                      −0.016 |
-|   11 |                      +0.020 |                           +0.022 |                      −0.007 |
-|   12 |                      +0.045 |                           +0.044 |                      +0.010 |
+|    1 |                     −0.0124 |                          −0.0104 |                     −0.0109 |
+|    2 |                     −0.0005 |                          +0.0005 |                     −0.0063 |
+|    3 |                     +0.0124 |                          +0.0080 |                     −0.0130 |
+|    4 |                     +0.0085 |                          +0.0114 |                     −0.0146 |
+|    5 |                     +0.0150 |                          +0.0169 |                     −0.0086 |
+|    6 |                     +0.0311 |                          +0.0300 |                     −0.0027 |
+|    7 |                     +0.0401 |                          +0.0361 |                     −0.0068 |
+|    8 |                     +0.0471 |                          +0.0352 |                     −0.0056 |
+|    9 |                     +0.0452 |                          +0.0350 |                     −0.0010 |
+|   10 |                     +0.0336 |                          +0.0285 |                     −0.0114 |
+|   11 |                     +0.0347 |                          +0.0202 |                     −0.0066 |
+|   12 |                     +0.0307 |                          +0.0267 |                     −0.0068 |
 
 ### 3.2 Coastal skill improvement and lead-window dependence
 
@@ -379,7 +379,7 @@ Fifth, PDOe-alone analog selection is harmful or unstable in this framework. Thi
 
 This study used an analog forecasting framework based on a CESM-HR library and OISST observations to evaluate the roles of NPMM and PDOe in seasonal prediction of coastal SSTA along the northeast Pacific and Alaska coast. The main conclusions are as follows.
 
-1. **The analog framework is skillful, and NPMM adds its clearest value in the coastal band.** The baseline `wide_local_only` forecast has domain-wide ACC of 0.865 at lead 1 and 0.334 at lead 12 and exceeds persistence after lead 3. NPMM source gain is negative in the domain-wide mean at leads 1–4 but becomes positive from lead 5 onward. The coastal-band response is sharper: in the ≤150 km band, the strongest NPMM-related improvement occurs at lead 6–7.
+1. **The analog framework is skillful, and NPMM adds its clearest value in the coastal band.** The baseline `wide_local_only` forecast has domain-wide ACC of 0.688 at lead 1 and 0.267 at lead 12 and exceeds persistence from lead 3 onward. NPMM source gain is negative or near-zero in the domain-wide mean at leads 1–2 but becomes positive from lead 3 onward. The coastal-band response is sharper: in the ≤150 km band, the strongest NPMM-related improvement occurs at lead 6–7.
 
 2. **Lead 6–7 is the central coastal skill-improvement window.** In the ≤150 km coastal band, `wide_npmm` reaches `source_gain_acc = +0.0542`, RMSE skill `= +0.0281`, and `both_fraction = 0.923` at lead 6–7. The combined `wide_npmm_pdoe` experiment reaches `source_gain_acc = +0.0588`, RMSE skill `= +0.0317`, and `both_fraction = 0.961`. Skill decreases offshore, supporting the interpretation that the predictable NPMM-related signal is concentrated near the coastal boundary.
 
@@ -437,7 +437,7 @@ Map of the 30°–62°N, 195°–240°E domain showing the GSHHS fjord-inclusive
 
 ### Figure 2. Baseline skill and domain-wide source gain
 
-Lead-dependent ACC for the `wide_local_only` baseline and source_gain_acc for `wide_npmm`, `wide_npmm_pdoe`, and `wide_pdoe` in the domain-wide sanity check. The figure should emphasize that baseline ACC declines from 0.865 at lead 1 to 0.334 at lead 12, while domain-wide NPMM source gain becomes positive from lead 5 onward and peaks at lead 9.
+Lead-dependent ACC for the `wide_local_only` baseline and source_gain_acc for `wide_npmm`, `wide_npmm_pdoe`, and `wide_pdoe` in the domain-wide sanity check. The figure should emphasize that baseline ACC declines from 0.688 at lead 1 to 0.267 at lead 12, while domain-wide NPMM source gain becomes positive from lead 3 onward and peaks at lead 8.
 
 *Source: `figures/nb03_grid_skill_maps_30_62/alaska_grid1440_30_62/alaska_grid1440_30_62_source_gain_vs_wide_local.csv` — domain-wide cell-level temporal ACC, averaged across all grid cells (lead 1–12 only).*
 
@@ -456,7 +456,7 @@ Lead-dependent ACC for the `wide_local_only` baseline and source_gain_acc for `w
 |   11 |        0.274 |           0.230 |          +0.0347 |               +0.0202 |          −0.0066 |
 |   12 |        0.267 |           0.212 |          +0.0307 |               +0.0267 |          −0.0068 |
 
-> **Note:** Baseline ACC here (0.688 at lead 1) is the per-cell temporal ACC averaged over all domain cells. The manuscript text value (0.865 at lead 1) is computed differently — likely as a cross-spatial pattern correlation per initialization, then averaged over cases. A line plot figure from these values is **not yet** generated.
+> **Note:** All values are per-cell temporal ACC averaged across 1,197 usable domain cells (NB03; Fisher Z 95% CI available). A line plot figure is not yet generated.
 
 ---
 
